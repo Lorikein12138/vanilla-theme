@@ -2,6 +2,12 @@
 
 🚨 MANDATORY: YOU MUST CALL "learn_shopify_api" ONCE WHEN WORKING WITH LIQUID THEMES.
 
+## Git 操作约束
+
+- 不要主动创建 commit、push 分支或提交 Pull Request；只有在用户明确要求后才可以执行这些操作。
+- 每次 commit 或 Pull Request 前，必须先编写中文标题和中文内容供用户审核，并等待用户明确确认。Conventional Commit 类型前缀（例如 `chore:`）可以保留英文。
+- 每次新建分支前，必须先提供分支名供用户审核，并等待用户明确确认后再创建分支。
+
 ## Theme Architecture
 
 **Key principles: focus on generating snippets, blocks, and sections; users may create templates using the theme editor**
