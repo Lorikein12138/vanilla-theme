@@ -9,6 +9,9 @@ ehthumbs.db
 Thumbs.db
 node_modules/
 
+# Agent/runtime planning artifacts
+docs/superpowers/
+
 # Shopify CLI files
 .shopify/
 
