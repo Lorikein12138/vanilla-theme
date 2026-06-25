@@ -1,3 +1,10 @@
+{% doc %}
+  Renders global CSS variables and font faces for the theme.
+
+  @example
+  {% render 'css-variables' %}
+{% enddoc %}
+
 {% style %}
   {% # Loads all font variantions with display: swap %}
   {{ settings.type_primary_font | font_face: font_display: 'swap' }}

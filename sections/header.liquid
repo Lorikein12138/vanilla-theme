@@ -10,6 +10,8 @@
   </div>
 
   <div class="header__icons">
+    {% render 'language-selector', id: 'HeaderLanguageSelector' %}
+
     {% if shop.customer_accounts_enabled %}
       <shopify-account menu="{{ section.settings.customer_account_menu }}">
         {{ 'icon-account.svg' | inline_asset_content }}

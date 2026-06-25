@@ -37,10 +37,19 @@
     "expires_on": "Expires on {{ expires_on }}",
     "use_at_checkout": "Use this gift card at checkout"
   },
+  "general": {
+    "language_selector": {
+      "label": "Language",
+      "submit": "Change language"
+    }
+  },
   "password": {
     "title": "This shop is private",
     "password": "Password",
     "enter": "Enter"
+  },
+  "products": {
+    "add_to_cart": "Add to cart"
   },
   "search": {
     "title": "Search",
@@ -48,5 +57,27 @@
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
     "results_for_html": "{{ count }} results found for {{ terms }}"
+  },
+  "sections": {
+    "hello_world": {
+      "title": "Hello, World!",
+      "intro_html": "The Skeleton theme is a minimal, carefully structured Shopify theme designed to help you quickly get started. Designed with modularity, maintainability, and Shopify's best practices in mind.",
+      "theme_description_html": "Themes shape the online store experience for merchants and their customers. Build fast, flexible themes at scale using Liquid, Shopify's theme templating language, along with HTML, CSS, JavaScript, and JSON.",
+      "key_concepts": {
+        "title": "Key concepts",
+        "description": "Shopify themes are a package of template files, building blocks, and supporting assets. Use these building blocks to create modular, customizable themes.",
+        "link": "Learn more about key concepts"
+      },
+      "liquid": {
+        "title": "Liquid",
+        "description": "The Liquid templating language is the backbone of Shopify themes, and is used to load dynamic content on storefronts. Extend Liquid objects to store and present custom data using metafields.",
+        "link": "View the Liquid reference"
+      },
+      "best_practices": {
+        "title": "Best practices",
+        "description": "To optimize your theme development experience, Shopify has established a set of best practices that you can refer to when developing your theme and setting up your toolchains and processes.",
+        "link": "Follow best practices"
+      }
+    }
   }
 }
