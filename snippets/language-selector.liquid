@@ -1,0 +1,237 @@
+{% doc %}
+  Renders a Shopify localization language selector.
+
+  The selector uses Shopify's localization form for manual language changes
+  and the browsing context suggestions endpoint for one-time automatic language
+  matching.
+
+  @param {string} [id] - A unique id for the language selector input
+
+  @example
+  {% render 'language-selector' %}
+{% enddoc %}
+
+{% if localization.available_languages.size > 1 %}
+  {% assign language_selector_id = id | default: 'LanguageSelector' %}
+
+  <localization-form class="language-selector" data-auto-language="true">
+    {% form 'localization' %}
+      <label class="language-selector__label" for="{{ language_selector_id }}">
+        {{ 'general.language_selector.label' | t }}
+      </label>
+
+      <select
+        id="{{ language_selector_id }}"
+        class="language-selector__select"
+        name="language_code"
+        aria-label="{{ 'general.language_selector.label' | t }}"
+      >
+        {% for language in localization.available_languages %}
+          <option
+            value="{{ language.iso_code }}"
+            lang="{{ language.iso_code }}"
+            data-language-root-url="{{ language.root_url }}"
+            {% if language.iso_code == localization.language.iso_code %}
+              selected
+            {% endif %}
+          >
+            {{ language.endonym_name | capitalize }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <noscript>
+        <button class="language-selector__submit" type="submit">
+          {{ 'general.language_selector.submit' | t }}
+        </button>
+      </noscript>
+    {% endform %}
+  </localization-form>
+{% endif %}
+
+{% stylesheet %}
+  .language-selector {
+    display: flex;
+    align-items: center;
+  }
+
+  .language-selector form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .language-selector__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .language-selector__select {
+    min-height: 2.5rem;
+    max-width: 10rem;
+    padding: 0 2rem 0 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: var(--style-border-radius-inputs);
+    background-color: transparent;
+    color: var(--color-foreground);
+    font: inherit;
+  }
+
+  .language-selector__submit {
+    min-height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: var(--style-border-radius-inputs);
+    background-color: transparent;
+    color: var(--color-foreground);
+    font: inherit;
+    cursor: pointer;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  class LocalizationForm extends HTMLElement {
+    connectedCallback() {
+      this.form = this.querySelector('form');
+      this.languageSelect = this.querySelector('select[name="language_code"]');
+
+      if (!this.form || !this.languageSelect) {
+        return;
+      }
+
+      this.languageSelect.addEventListener('change', () => {
+        this.rememberManualLanguageSelection();
+
+        if (this.shouldUseLocalPreviewRedirect()) {
+          this.redirectToSelectedLanguageRoot();
+          return;
+        }
+
+        this.form.submit();
+      });
+
+      this.applySuggestedLanguage();
+    }
+
+    rememberManualLanguageSelection() {
+      try {
+        window.localStorage.setItem('vanilla-theme:manual-language', this.languageSelect.value);
+      } catch (error) {
+        // Storage can be unavailable in strict privacy contexts.
+      }
+    }
+
+    shouldUseLocalPreviewRedirect() {
+      return window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+    }
+
+    redirectToSelectedLanguageRoot() {
+      const selectedOption = this.languageSelect.selectedOptions[0];
+      const languageRootUrl = selectedOption && selectedOption.dataset.languageRootUrl;
+
+      if (!languageRootUrl) {
+        this.form.submit();
+        return;
+      }
+
+      window.location.href = languageRootUrl;
+    }
+
+    getSuggestedLanguage(data) {
+      if (!data || !Array.isArray(data.suggestions)) {
+        return null;
+      }
+
+      const suggestion = data.suggestions.find((item) => item.parts && item.parts.language);
+
+      if (!suggestion) {
+        return null;
+      }
+
+      const language = suggestion.parts.language;
+
+      if (typeof language === 'string') {
+        return language;
+      }
+
+      return language.handle || language.iso_code || language.code || null;
+    }
+
+    async applySuggestedLanguage() {
+      if (this.dataset.autoLanguage !== 'true') {
+        return;
+      }
+
+      if (!window.Shopify || !window.Shopify.routes || !window.Shopify.routes.root) {
+        return;
+      }
+
+      const currentLanguage = window.Shopify.language || document.documentElement.lang;
+
+      if (!currentLanguage) {
+        return;
+      }
+
+      try {
+        if (window.localStorage.getItem('vanilla-theme:manual-language')) {
+          return;
+        }
+
+        const suggestionKey = `vanilla-theme:suggested-language:${currentLanguage}`;
+
+        if (window.sessionStorage.getItem(suggestionKey)) {
+          return;
+        }
+
+        window.sessionStorage.setItem(suggestionKey, 'true');
+
+        const response = await fetch(
+          `${window.Shopify.routes.root}browsing_context_suggestions.json?language[enabled]=true&language[exclude]=${encodeURIComponent(currentLanguage)}`,
+          {
+            headers: {
+              Accept: 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const suggestedLanguage = this.getSuggestedLanguage(await response.json());
+
+        if (!suggestedLanguage || suggestedLanguage === currentLanguage) {
+          return;
+        }
+
+        const suggestedOption = Array.from(this.languageSelect.options).find((option) => option.value === suggestedLanguage);
+
+        if (!suggestedOption) {
+          return;
+        }
+
+        this.languageSelect.value = suggestedLanguage;
+
+        if (this.shouldUseLocalPreviewRedirect()) {
+          this.redirectToSelectedLanguageRoot();
+          return;
+        }
+
+        this.form.submit();
+      } catch (error) {
+        // Ignore suggestion failures so language selection always remains manual.
+      }
+    }
+  }
+
+  if (!customElements.get('localization-form')) {
+    customElements.define('localization-form', LocalizationForm);
+  }
+{% endjavascript %}

@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  theme:
+    name: Theme checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Shopify CLI
+        run: npm install --global @shopify/cli@4.3.0
+
+      - name: Verify theme structure and translations
+        run: node scripts/verify-theme.js
+
+      - name: Run Shopify Theme Check
+        run: shopify theme check

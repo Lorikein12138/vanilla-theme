@@ -36,7 +36,7 @@
 
     <input type="text" name="quantity" min="1" value="1">
 
-    <input type="submit" value="Add to cart">
+    <input type="submit" value="{{ 'products.add_to_cart' | t }}">
     {{ form | payment_button }}
   {% endform %}
 </div>
